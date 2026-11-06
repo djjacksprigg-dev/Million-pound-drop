@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Million Pound Drop Scoreboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* Layout: classroom board — join panel (code + QR) on the left, live leaderboard of money bars on the right; stacks on narrow screens. */
+:root{
+  --bg:#06121c; --panel:#0d2232; --panel-2:#12304a; --line:#1f4a6b;
+  --fg:#eaf4fb; --muted:#8fb0c6; --gold:#f6c84c; --gold-deep:#c9961c;
+  --right:#3fd68a; --wrong:#ff5a5f; --glow:#2fb3ff;
+  --display:"Archivo Black","Arial Black",Impact,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;
+  background-image:radial-gradient(120% 60% at 50% -10%,#123a5a 0%,transparent 60%);background-attachment:fixed}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:3px solid var(--glow);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-block:24px;
+  display:grid;grid-template-columns:minmax(280px,360px) 1fr;gap:28px;align-items:start}
+@media (max-width:820px){.wrap{grid-template-columns:1fr}}
+.eyebrow{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:14px;color:var(--muted)}
+.brand{font-family:var(--display);text-transform:uppercase;line-height:.92;margin:0;font-size:clamp(30px,3.4vw,44px)}
+.brand span{color:var(--gold);display:block}
+.join{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px;position:sticky;top:20px}
+.code{font-family:var(--display);font-size:clamp(56px,7vw,88px);letter-spacing:.08em;color:var(--gold);line-height:1;font-variant-numeric:tabular-nums}
+.url{font-weight:700;font-size:18px;word-break:break-all}
+#qr{background:#fff;padding:12px;border-radius:12px;align-self:flex-start;line-height:0}
+#qr img,#qr canvas{display:block;width:180px;height:180px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:15px;padding:10px 14px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line)}
+.btn.gold{background:linear-gradient(180deg,var(--gold),var(--gold-deep));color:#1a1203;border-color:transparent}
+.btn.danger{background:var(--wrong);color:#2a0507;border-color:transparent}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.stats{display:flex;gap:22px}
+.stat b{display:block;font-family:var(--display);font-size:28px;font-variant-numeric:tabular-nums}
+.list{display:flex;flex-direction:column;gap:10px}
+.row{position:relative;display:grid;grid-template-columns:54px 1fr auto;gap:14px;align-items:center;padding:14px 18px;border-radius:14px;background:var(--panel);border:1px solid var(--line);overflow:hidden;transition:transform .5s}
+.row .bar{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,rgba(246,200,76,.20),rgba(246,200,76,.06));transition:width .9s cubic-bezier(.3,.8,.3,1);z-index:0}
+.row>*:not(.bar){position:relative;z-index:1}
+.rk{font-family:var(--display);font-size:26px;color:var(--muted);text-align:center}
+.row.p1 .rk{color:var(--gold)}.row.p2 .rk{color:#d7e2ea}.row.p3 .rk{color:#e09a5a}
+.row.p1{border-color:var(--gold-deep)}
+.nm{min-width:0}
+.nm strong{display:block;font-size:clamp(18px,2vw,24px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prog{display:flex;gap:4px;margin-top:6px}
+.prog i{width:22px;height:6px;border-radius:3px;background:var(--panel-2)}
+.prog i.on{background:var(--glow)}
+.prog i.fin{background:var(--right)}
+.mn{font-family:var(--display);font-size:clamp(22px,2.6vw,34px);color:var(--gold);font-variant-numeric:tabular-nums}
+.row.bust .mn{color:var(--wrong)}
+.tag{font-family:var(--cond);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:12px;color:var(--muted);margin-left:6px}
+.row.bust .tag{color:var(--wrong)} .row.fin .tag{color:var(--right)}
+.empty{padding:40px 20px;text-align:center;color:var(--muted);border:2px dashed var(--line);border-radius:14px;line-height:1.6}
+.status{font-size:14px;color:var(--muted)}
+.status.err{color:var(--wrong)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="join">
+    <h1 class="brand">The Million<span>Pound Drop</span></h1>
+    <div>
+      <div class="eyebrow">Room code</div>
+      <div class="code" id="code">····</div>
+    </div>
+    <div>
+      <div class="eyebrow">Join on your phone</div>
+      <div class="url" id="url"></div>
+    </div>
+    <div id="qr" aria-label="QR code to join this room"></div>
+    <div class="btns">
+      <button class="btn gold" id="newroom">New room</button>
+      <button class="btn" id="clear">Clear scores</button>
+      <button class="btn" id="full">Full screen</button>
+    </div>
+    <div class="status" id="status"></div>
+  </aside>
+  <main>
+    <div class="head">
+      <div><div class="eyebrow">Live leaderboard</div><h2 class="brand" style="font-size:clamp(26px,3vw,38px)">Who's still got the money?</h2></div>
+      <div class="stats">
+        <div class="stat"><span class="eyebrow">Teams</span><b id="nTeams">0</b></div>
+        <div class="stat"><span class="eyebrow">Finished</span><b id="nDone">0</b></div>
+        <div class="stat"><span class="eyebrow">Class total</span><b id="total">£0</b></div>
+      </div>
+    </div>
+    <div class="list" id="list"></div>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const fmt=n=>"£"+n.toLocaleString("en-GB");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=id=>document.getElementById(id);
+const CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O or 1/I mix-ups
+let room="", clearArmed=null;
+
+function newCode(){return Array.from({length:4},()=>CHARS[Math.floor(Math.random()*CHARS.length)]).join("")}
+function setRoom(r){
+  room=r; $("code").textContent=r;
+  const join=location.origin+"/?room="+r;
+  $("url").textContent=location.host+"/?room="+r;
+  try{localStorage.setItem("mpd-board-room",r)}catch(e){}
+  history.replaceState(null,"","?room="+r);
+  $("qr").innerHTML="";
+  if(window.QRCode) new QRCode($("qr"),{text:join,width:360,height:360,colorDark:"#06121c",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
+  else $("qr").hidden=true;
+  $("list").innerHTML=""; load();
+}
+
+async function load(){
+  if(!room) return;
+  try{
+    const r=await fetch("/api/scores?room="+room,{cache:"no-store"});
+    if(!r.ok) throw new Error(r.status);
+    const {teams}=await r.json();
+    $("status").className="status"; $("status").textContent="Updated "+new Date().toLocaleTimeString("en-GB");
+    render(teams);
+  }catch(e){
+    $("status").className="status err";
+    $("status").textContent="Can't reach the scoreboard service. Check the site is deployed on Netlify with its functions.";
+  }
+}
+
+function render(teams){
+  teams.sort((a,b)=>b.money-a.money||b.q-a.q||a.updated-b.updated);
+  $("nTeams").textContent=teams.length;
+  $("nDone").textContent=teams.filter(t=>t.done).length;
+  $("total").textContent=fmt(teams.reduce((a,t)=>a+t.money,0));
+  const list=$("list");
+  if(!teams.length){list.innerHTML=`<div class="empty">Waiting for teams to join.<br>Scan the QR code or go to <b>${esc(location.host)}</b> and enter <b>${esc(room)}</b>.</div>`;return;}
+  if(list.querySelector(".empty")) list.innerHTML="";
+  // FLIP-style reorder: remember positions, rebuild, animate from old spot
+  const before={}; list.querySelectorAll(".row").forEach(el=>before[el.dataset.id]=el.getBoundingClientRect().top);
+  const existing={}; list.querySelectorAll(".row").forEach(el=>existing[el.dataset.id]=el);
+  const frag=document.createDocumentFragment();
+  teams.forEach((t,i)=>{
+    let el=existing[t.id];
+    if(!el){el=document.createElement("div");el.className="row";el.dataset.id=t.id;
+      el.innerHTML=`<div class="bar" style="width:100%"></div><div class="rk"></div><div class="nm"><strong></strong><div class="prog"></div></div><div class="mn"></div>`;}
+    const total=t.total||7, bust=t.money===0;
+    el.className="row"+(i<3?" p"+(i+1):"")+(bust?" bust":t.done?" fin":"");
+    el.querySelector(".rk").textContent=i+1;
+    el.querySelector("strong").innerHTML=esc(t.team)+`<span class="tag">${bust?"Out":t.done?"Finished":"Q"+Math.min(t.q+1,total)}</span>`;
+    el.querySelector(".prog").innerHTML=Array.from({length:total},(_,k)=>`<i class="${k<t.q?(bust?"":t.done?"fin":"on"):""}"></i>`).join("");
+    el.querySelector(".mn").textContent=fmt(t.money);
+    el.querySelector(".bar").style.width=(t.money/1000000*100)+"%";
+    frag.appendChild(el);
+  });
+  list.innerHTML=""; list.appendChild(frag);
+  list.querySelectorAll(".row").forEach(el=>{
+    const old=before[el.dataset.id]; if(old==null) return;
+    const dy=old-el.getBoundingClientRect().top; if(!dy) return;
+    el.style.transition="none"; el.style.transform=`translateY(${dy}px)`;
+    requestAnimationFrame(()=>{el.style.transition="";el.style.transform="";});
+  });
+}
+
+$("newroom").onclick=()=>setRoom(newCode());
+$("clear").onclick=async()=>{
+  const b=$("clear");
+  if(!clearArmed){b.textContent="Tap again to clear";b.classList.add("danger");clearArmed=setTimeout(()=>{b.textContent="Clear scores";b.classList.remove("danger");clearArmed=null},3000);return;}
+  clearTimeout(clearArmed);clearArmed=null;b.textContent="Clear scores";b.classList.remove("danger");
+  try{await fetch("/api/scores?room="+room,{method:"DELETE"});}catch(e){}
+  $("list").innerHTML=""; load();
+};
+$("full").onclick=()=>{const d=document.documentElement;(document.fullscreenElement?document.exitFullscreen():d.requestFullscreen?.())?.catch?.(()=>{});};
+
+let saved=""; try{saved=localStorage.getItem("mpd-board-room")||""}catch(e){}
+const fromUrl=(new URLSearchParams(location.search).get("room")||"").toUpperCase();
+setRoom(/^[A-Z0-9]{4}$/.test(fromUrl)?fromUrl:/^[A-Z0-9]{4}$/.test(saved)?saved:newCode());
+setInterval(load,3000);
+</script>
+</body>
+</html>

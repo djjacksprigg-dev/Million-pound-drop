@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Console Market Million Pound Drop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* Layout: one-screen phone game — money bar on top, trapdoor cards stacked, action button pinned at the bottom. Single dark studio look by choice. */
+:root{
+  --bg:#06121c; --panel:#0d2232; --panel-2:#12304a; --line:#1f4a6b;
+  --fg:#eaf4fb; --muted:#8fb0c6; --gold:#f6c84c; --gold-deep:#c9961c;
+  --right:#3fd68a; --wrong:#ff5a5f; --glow:#2fb3ff;
+  --display:"Archivo Black","Arial Black",Impact,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%}
+body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;
+  background-image:radial-gradient(120% 60% at 50% -10%,#123a5a 0%,transparent 60%),radial-gradient(80% 40% at 50% 110%,#0b2a3f 0%,transparent 70%);
+  background-attachment:fixed}
+.wrap{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:14px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 110px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible{outline:3px solid var(--glow);outline-offset:2px}
+.brand{font-family:var(--display);text-transform:uppercase;letter-spacing:.01em;line-height:.92}
+.eyebrow{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:13px;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+
+/* Start screen */
+.hero{display:flex;flex-direction:column;gap:14px;padding-top:10px}
+.hero h1{font-size:clamp(40px,12vw,64px);margin:0;text-wrap:balance}
+.hero h1 span{color:var(--gold);display:block}
+.hero p{margin:0;color:var(--muted);line-height:1.5}
+.stack{display:flex;flex-direction:column;gap:10px}
+.rules{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.rule{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;line-height:1.4}
+.rule b{color:var(--fg)}
+.rule .n{font-family:var(--display);color:var(--bg);background:var(--gold);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:14px}
+label.eyebrow{display:block;margin-bottom:6px}
+input[type=text]{width:100%;font:600 18px var(--body);padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--fg)}
+
+.cta{width:100%;font-family:var(--display);text-transform:uppercase;font-size:20px;letter-spacing:.02em;padding:18px;border-radius:14px;
+  background:linear-gradient(180deg,var(--gold),var(--gold-deep));color:#1a1203;box-shadow:0 6px 0 #7a5a0c,0 10px 30px rgba(246,200,76,.25);transition:transform .08s}
+.cta:active{transform:translateY(3px);box-shadow:0 3px 0 #7a5a0c}
+.cta:disabled{background:var(--panel-2);color:var(--muted);box-shadow:none;cursor:not-allowed}
+.dock{position:fixed;left:0;right:0;bottom:0;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:linear-gradient(180deg,transparent,var(--bg) 35%);z-index:5}
+.dock-inner{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.hint{text-align:center;font-size:14px;color:var(--muted);min-height:1.2em}
+.hint.warn{color:var(--gold)}
+
+/* Game header */
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.qcount{font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.qcount b{color:var(--fg)}
+.timer{position:relative;width:54px;height:54px;flex:none}
+.timer svg{width:54px;height:54px;transform:rotate(-90deg)}
+.timer .t{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:18px}
+.timer.low .t{color:var(--wrong)}
+.bank{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.bank .amt{font-family:var(--display);font-size:clamp(24px,7.5vw,32px);color:var(--gold)}
+.bank .amt.zero{color:var(--right)}
+.bundles{display:flex;flex-wrap:wrap;gap:3px;justify-content:flex-end;max-width:52%}
+.bundles i{width:9px;height:14px;border-radius:2px;background:var(--gold);box-shadow:inset 0 -3px 0 var(--gold-deep)}
+.bundles i.off{background:var(--panel-2);box-shadow:none}
+.question{font-family:var(--body);font-weight:700;font-size:clamp(20px,5.6vw,24px);line-height:1.25;margin:2px 0 0;text-wrap:balance}
+.topic{display:inline-block;align-self:flex-start;font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:12px;padding:4px 9px;border-radius:999px;background:var(--panel-2);color:var(--glow)}
+
+/* Trapdoors */
+.doors{display:flex;flex-direction:column;gap:10px}
+.door{position:relative;border-radius:14px;background:var(--panel);border:2px solid var(--line);overflow:hidden;transition:border-color .3s,background .3s,opacity .4s}
+.door.has{border-color:var(--gold-deep);background:linear-gradient(180deg,#1a3346,var(--panel))}
+.door-row{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:12px 10px 12px 12px}
+.letter{font-family:var(--display);width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--panel-2);font-size:16px}
+.door.has .letter{background:var(--gold);color:#1a1203}
+.ans{font-weight:600;font-size:17px;line-height:1.25;min-width:0}
+.stake{font-family:var(--display);font-size:15px;color:var(--gold);display:block;margin-top:3px}
+.stake.none{color:var(--muted);font-family:var(--body);font-weight:600;font-size:13px}
+.ctrls{display:flex;gap:6px}
+.ctrl{width:46px;height:46px;border-radius:11px;background:var(--panel-2);font-family:var(--display);font-size:22px;line-height:1;display:grid;place-items:center;border:1px solid var(--line)}
+.ctrl:disabled{opacity:.35;cursor:not-allowed}
+.ctrl.plus{background:#17405f}
+.quick{display:flex;gap:6px;padding:0 10px 10px 58px}
+.quick button{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:13px;padding:6px 10px;border-radius:8px;background:var(--panel-2);color:var(--muted);border:1px solid var(--line)}
+.locked .ctrls,.locked .quick{display:none}
+
+/* Drop animation */
+.door.dropping{border-color:var(--wrong)}
+.door.dropping .door-row{animation:shake .45s}
+.door.gone{opacity:.45;border-color:var(--wrong);background:var(--panel)}
+.door.gone .stake{color:var(--wrong);text-decoration:line-through}
+.door.win{border-color:var(--right);box-shadow:0 0 0 3px rgba(63,214,138,.18),0 0 30px rgba(63,214,138,.25)}
+.door.win .letter{background:var(--right);color:#05210f}
+/* Trapdoor hatch: two leaves over a dark pit, money pile sits on top */
+.hatch{cursor:pointer;position:relative;height:58px;margin:0 10px 10px;border-radius:10px;perspective:420px;overflow:hidden;background:#000}
+.pit{position:absolute;inset:0;background:radial-gradient(70% 90% at 50% 50%,#000 30%,#05080b 100%);box-shadow:inset 0 10px 18px rgba(0,0,0,.9)}
+.leaf{position:absolute;top:0;bottom:0;width:50%;background:
+  repeating-linear-gradient(90deg,transparent 0 22px,rgba(0,0,0,.18) 22px 24px),linear-gradient(180deg,#2a4a63,#183247);
+  border:1px solid #2f5776;transition:transform .7s cubic-bezier(.55,0,.35,1),filter .7s;backface-visibility:hidden}
+.leaf.l{left:0;transform-origin:left center;border-radius:10px 0 0 10px}
+.leaf.r{right:0;transform-origin:right center;border-radius:0 10px 10px 0}
+.leaf::after{content:"";position:absolute;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:#0b1a26;box-shadow:inset 0 0 0 2px #3b6a8d}
+.leaf.l::after{right:8px}.leaf.r::after{left:8px}
+.seam{position:absolute;top:6px;bottom:6px;left:50%;width:2px;margin-left:-1px;background:#081520;transition:opacity .2s}
+.lights{position:absolute;inset:0;border-radius:10px;box-shadow:inset 0 0 0 2px transparent;transition:box-shadow .2s;pointer-events:none}
+.door.has .lights{box-shadow:inset 0 0 0 2px rgba(246,200,76,.5)}
+.pile{position:absolute;inset:0;display:flex;flex-wrap:wrap-reverse;align-content:center;justify-content:center;gap:3px 4px;padding:8px 26px;z-index:2;transition:transform .9s cubic-bezier(.5,0,.75,0),opacity .9s,filter .9s}
+.pile i{width:22px;height:12px;border-radius:2px;background:linear-gradient(180deg,#9ee6a8,#57b866);border:1px solid #2f7a3c;box-shadow:0 2px 0 rgba(0,0,0,.4);position:relative}
+.pile i.new{animation:land .25s ease-out}
+.pile i::after{content:"";position:absolute;left:8px;top:2px;width:4px;height:6px;border-radius:50%;border:1px solid #2f7a3c}
+.pile .emptytxt{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:#5c7d93;align-self:center}
+@keyframes land{from{transform:translateY(-10px);opacity:0}}
+.door.open .leaf.l{transform:rotateY(-96deg);filter:brightness(.4)}
+.door.open .leaf.r{transform:rotateY(96deg);filter:brightness(.4)}
+.door.open .seam{opacity:0}
+.door.open .pile{transform:translateY(14px) scale(.25);opacity:0;filter:blur(1px)}
+.door.open .lights{box-shadow:inset 0 0 0 2px var(--wrong),inset 0 0 22px rgba(255,90,95,.5)}
+.door.win .lights{box-shadow:inset 0 0 0 2px var(--right),inset 0 0 22px rgba(63,214,138,.45)}
+.door.win .pile i{animation:bounce .6s ease-out}
+@keyframes bounce{30%{transform:translateY(-6px)}60%{transform:translateY(1px)}}
+/* drumroll: lights chase round the doors before the drop */
+.door.scan .lights{animation:scan .5s ease-in-out}
+@keyframes scan{50%{box-shadow:inset 0 0 0 3px #fff,inset 0 0 26px rgba(47,179,255,.6)}}
+.flash{position:fixed;inset:0;background:var(--wrong);opacity:0;pointer-events:none;z-index:20;animation:flash .35s ease-out}
+@keyframes flash{30%{opacity:.18}}
+.note{position:absolute;width:20px;height:12px;border-radius:2px;background:linear-gradient(180deg,#9ee6a8,#57b866);border:1px solid #2f7a3c;z-index:3;pointer-events:none;animation:fall 1s ease-in forwards}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes fall{to{transform:translateY(26px) scale(.15) rotate(260deg);opacity:0}}
+
+.explain{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--right);border-radius:12px;padding:14px;line-height:1.5}
+.explain h3{margin:0 0 4px;font-family:var(--cond);font-size:20px;text-transform:uppercase;letter-spacing:.05em}
+.explain p{margin:0;color:var(--muted)}
+.explain.lostall{border-left-color:var(--wrong)}
+
+/* End */
+.final{text-align:center;display:flex;flex-direction:column;gap:12px;padding-top:24px}
+.final .big{font-family:var(--display);font-size:clamp(44px,14vw,72px);color:var(--gold);line-height:1}
+.final .big.lost{color:var(--wrong)}
+.log{display:flex;flex-direction:column;gap:6px;text-align:left}
+.log div{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;background:var(--panel);border-radius:10px;font-size:15px}
+.log span:last-child{font-weight:700}
+.debrief{background:var(--panel-2);border-radius:12px;padding:14px;text-align:left;line-height:1.5}
+.ghost{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:10px}
+.roomchip{font-family:var(--cond);font-weight:700;letter-spacing:.12em;font-size:13px;padding:3px 8px;border-radius:6px;background:var(--panel-2);color:var(--gold);align-self:flex-start}
+.offline{color:var(--muted);font-size:13px}
+.row2{display:grid;grid-template-columns:1fr 120px;gap:10px}
+.row2 input{text-transform:uppercase;letter-spacing:.2em;text-align:center}
+.board{display:flex;flex-direction:column;gap:6px;text-align:left}
+.brow{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 12px;background:var(--panel);border-radius:10px;border:1px solid var(--line)}
+.brow.me{border-color:var(--gold)}
+.brow .rk{font-family:var(--display);color:var(--muted)}
+.brow .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.brow .nm small{display:block;font-weight:600;color:var(--muted);font-size:12px}
+.brow .mn{font-family:var(--display);color:var(--gold)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+<div class="dock" id="dock" hidden><div class="dock-inner"><div class="hint" id="hint"></div><button class="cta" id="cta"></button></div></div>
+
+<script>
+const BUNDLE = 50000, START = 1000000, TIME = 60;
+const QS = [
+ {topic:"Sales",q:"Which console sold the most units worldwide in March 2026?",a:["PlayStation 5","Nintendo Switch 2","Xbox Series X|S","Original Nintendo Switch"],c:1,
+  e:"Switch 2 sold about 1.77 million units that month, roughly double the PS5's 858,000 (VGChartz estimates)."},
+ {topic:"Market share",q:"Roughly what share of worldwide console sales did Switch 2 have in March 2026?",a:["About 10%","About 25%","About 60%","About 85%"],c:2,
+  e:"Switch 2 took about 59% of sales across the four consoles. PS5 had about 29%, the original Switch 7% and Xbox 5%."},
+ {topic:"Sales",q:"Which console sold the FEWEST units worldwide in March 2026?",a:["PlayStation 5","Nintendo Switch 2","Xbox Series X|S","Original Nintendo Switch"],c:2,
+  e:"Xbox Series X|S sold about 141,000, fewer than the original Switch (about 218,000), which is nine years old."},
+ {topic:"Product launch",q:"How many Switch 2 consoles did Nintendo sell in its first three days?",a:["350,000","1 million","3.5 million","10 million"],c:2,
+  e:"3.5 million in three days, making it the fastest-selling console in Nintendo's history."},
+ {topic:"Regions",q:"In March 2026, PS5 outsold Switch 2 in only ONE region. Which?",a:["The Americas","Europe","Australia & New Zealand"],c:2,
+  e:"In Oceania, PS5 sold about 29,500 to Switch 2's 25,800. Switch 2 won every other region."},
+ {topic:"Marketing",q:"Switch 2 can be played on a TV or as a handheld. In marketing terms, this is its…",a:["Unique selling point","Target market","Distribution channel"],c:0,
+  e:"A USP is the feature that sets a product apart from competitors. No other major console does both."},
+ {topic:"Final drop",q:"Compared with the same point in 2025, Xbox Series X|S sales so far this year are…",a:["Up about 50%","Down about 50%"],c:1,
+  e:"Down 49.5% year-to-date. Debrief: is Xbox failing, or is Microsoft moving its focus to Game Pass and games on other platforms?"}
+];
+const L = "ABCD";
+const params=new URLSearchParams(location.search);
+let ID=""; try{ID=localStorage.getItem("mpd-id")||""}catch(e){}
+if(!/^[a-z0-9]{6,20}$/.test(ID)){ID=(Math.random().toString(36).slice(2)+Date.now().toString(36)).replace(/[^a-z0-9]/g,"").slice(0,16);try{localStorage.setItem("mpd-id",ID)}catch(e){}}
+let savedTeam="",savedRoom=""; try{savedTeam=localStorage.getItem("mpd-team")||"";savedRoom=localStorage.getItem("mpd-room")||""}catch(e){}
+async function report(done){
+  if(!S.room) return;
+  try{
+    const r=await fetch("/api/scores",{method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify({room:S.room,id:ID,team:S.team,money:S.money,q:S.answered,total:QS.length,done:!!done})});
+    S.online=r.ok;
+  }catch(e){S.online=false}
+  const o=document.getElementById("net"); if(o) o.hidden=S.online!==false;
+}
+const S = {room:"",answered:0,online:null,poll:null,team:"",qi:0,money:START,bets:[],phase:"start",left:TIME,timer:null,log:[]};
+const app = document.getElementById("app"), dock = document.getElementById("dock"), cta = document.getElementById("cta"), hint = document.getElementById("hint");
+const fmt = n => "£" + n.toLocaleString("en-GB");
+const placed = () => S.bets.reduce((a,b)=>a+b,0);
+const esc = s => String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+
+function start(){
+  S.phase="start"; dock.hidden=false; clearInterval(S.poll);
+  app.innerHTML = `
+  <section class="hero">
+    <div class="eyebrow">Customer &amp; Marketing · Console Market</div>
+    <h1 class="brand">The Million<span>Pound Drop</span></h1>
+    <p>Seven questions about the real console market. Protect as much of your million as you can.</p>
+    <div class="rules">
+      <div class="rule"><span class="n">1</span><div>You start with <b>£1,000,000</b> in 20 bundles of £50,000.</div></div>
+      <div class="rule"><span class="n">2</span><div>Put <b>all</b> your money on the answers, but leave <b>at least one answer empty</b>.</div></div>
+      <div class="rule"><span class="n">3</span><div>Money on wrong answers <b>drops</b>. You have <b>60 seconds</b>, and anything not placed when time runs out drops too.</div></div>
+    </div>
+    <div class="row2">
+      <div><label class="eyebrow" for="team">Team name</label>
+      <input type="text" id="team" maxlength="24" placeholder="e.g. Team Tangerine" value="${esc(S.team)}" style="text-transform:none;letter-spacing:0;text-align:left"></div>
+      <div><label class="eyebrow" for="room">Room code</label>
+      <input type="text" id="room" maxlength="4" placeholder="ABCD" autocomplete="off" autocapitalize="characters" value="${esc(S.room)}"></div>
+    </div>
+    <p style="font-size:14px">Your teacher will show the room code on the scoreboard. Leave it blank to play on your own.</p>
+    <a href="/scoreboard.html" style="color:var(--muted);font-size:14px;align-self:flex-start">Teacher? Open the scoreboard</a>
+  </section>`;
+  hint.textContent=""; hint.className="hint";
+  cta.disabled=false; cta.textContent="Start the game";
+  cta.onclick=()=>{
+    const room=document.getElementById("room").value.toUpperCase().replace(/[^A-Z0-9]/g,"");
+    if(room && room.length!==4){hint.className="hint warn";hint.textContent="Room codes are 4 letters or numbers";return;}
+    S.team=document.getElementById("team").value.trim()||"Your team";S.room=room;
+    try{localStorage.setItem("mpd-team",S.team);localStorage.setItem("mpd-room",S.room)}catch(e){}
+    S.qi=0;S.money=START;S.log=[];S.answered=0;report(false);question();};
+}
+
+function question(){
+  const Q=QS[S.qi]; S.phase="bet"; S.bets=Q.a.map(()=>0); S.left=TIME;
+  clearInterval(S.timer); S.timer=setInterval(tick,1000);
+  render();
+}
+function tick(){
+  S.left--; const t=document.querySelector(".timer");
+  if(t) updateTimer();
+  if(S.left<=0){clearInterval(S.timer); reveal(true);}
+}
+function updateTimer(){
+  const t=document.querySelector(".timer"); if(!t) return;
+  const C=2*Math.PI*23; t.querySelector(".ring").setAttribute("stroke-dashoffset",C*(1-S.left/TIME));
+  t.querySelector(".t").textContent=S.left; t.classList.toggle("low",S.left<=10);
+}
+
+function render(){
+  const Q=QS[S.qi], free=S.money-placed(), locked=S.phase!=="bet", C=2*Math.PI*23;
+  const total=Math.round(S.money/BUNDLE), freeB=Math.round(free/BUNDLE);
+  app.innerHTML=`
+  <div class="top">
+    <div class="stack" style="gap:4px">
+      <div class="qcount">Question <b>${S.qi+1}</b> of ${QS.length}</div>
+      <div class="eyebrow" style="text-transform:none;letter-spacing:.02em;font-size:15px;color:var(--fg)">${esc(S.team)}</div>
+      ${S.room?`<span class="roomchip">ROOM ${esc(S.room)}</span><span class="offline" id="net" ${S.online===false?"":"hidden"}>Scoreboard not connected</span>`:""}
+    </div>
+    <div class="timer" ${locked?'hidden':''}><svg viewBox="0 0 54 54"><circle cx="27" cy="27" r="23" fill="none" stroke="var(--panel-2)" stroke-width="5"/>
+      <circle class="ring" cx="27" cy="27" r="23" fill="none" stroke="var(--gold)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-S.left/TIME)}"/></svg><span class="t">${S.left}</span></div>
+  </div>
+  <div class="bank">
+    <div><div class="eyebrow">${locked?"Money in play":"Still to place"}</div><div class="amt num ${!locked&&free===0?'zero':''}">${fmt(locked?S.money:free)}</div></div>
+    <div class="bundles" aria-hidden="true">${Array.from({length:total},(_,i)=>`<i class="${!locked&&i>=freeB?'off':''}"></i>`).join("")}</div>
+  </div>
+  <span class="topic">${esc(Q.topic)}</span>
+  <h2 class="question">${esc(Q.q)}</h2>
+  <div class="doors ${locked?'locked':''}">${Q.a.map((a,i)=>`
+    <div class="door ${S.bets[i]?'has':''}" id="d${i}">
+      <div class="door-row">
+        <span class="letter">${L[i]}</span>
+        <div class="ans">${esc(a)}<span class="stake num ${S.bets[i]?'':'none'}">${S.bets[i]?fmt(S.bets[i]):"No money"}</span></div>
+        <div class="ctrls">
+          <button class="ctrl" data-i="${i}" data-d="-1" aria-label="Remove £50,000 from ${L[i]}" ${S.bets[i]?'':'disabled'}>−</button>
+          <button class="ctrl plus" data-i="${i}" data-d="1" aria-label="Add £50,000 to ${L[i]}" ${free?'':'disabled'}>+</button>
+        </div>
+      </div>
+      <div class="quick"><button data-i="${i}" data-q="all" ${free?'':'disabled'}>Add the rest</button><button data-i="${i}" data-q="clear" ${S.bets[i]?'':'disabled'}>Clear</button></div>
+      <div class="hatch" data-i="${i}" data-d="1" aria-hidden="true">
+        <div class="pit"></div>
+        <div class="leaf l"></div><div class="leaf r"></div><div class="seam"></div>
+        <div class="pile">${S.bets[i]?Array.from({length:S.bets[i]/BUNDLE},(_,k)=>`<i class="${i===S.lastI&&k===S.bets[i]/BUNDLE-1?"new":""}"></i>`).join(""):'<span class="emptytxt">Empty trapdoor</span>'}</div>
+        <div class="lights"></div>
+      </div>
+    </div>`).join("")}</div>
+  <div id="after"></div>`;
+  app.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i, f=S.money-placed(); S.lastI=i;
+    if(b.dataset.d) S.bets[i]=Math.max(0,S.bets[i]+(+b.dataset.d)*Math.min(BUNDLE, b.dataset.d>0?f:BUNDLE));
+    if(b.dataset.q==="all") S.bets[i]+=f;
+    if(b.dataset.q==="clear") S.bets[i]=0;
+    render();
+  });
+  if(!locked) updateDock();
+}
+
+function updateDock(){
+  const free=S.money-placed(), empty=S.bets.some(b=>b===0);
+  dock.hidden=false; cta.textContent="Lock in"; cta.onclick=()=>{clearInterval(S.timer);reveal(false);};
+  hint.className="hint";
+  if(free>0){cta.disabled=true; hint.textContent=`Place the last ${fmt(free)} to lock in`;}
+  else if(!empty){cta.disabled=true; hint.className="hint warn"; hint.textContent="Leave at least one answer empty";}
+  else {cta.disabled=false; hint.textContent=QS[S.qi].a.length===2?"All in on one answer. Sure?":"Ready when you are";}
+}
+
+function burst(el,n){
+  const r=el.querySelector(".hatch").getBoundingClientRect();
+  for(let k=0;k<Math.min(n*2,24);k++){
+    const s=document.createElement("span"); s.className="note";
+    s.style.left=(r.left+r.width*.3+Math.random()*r.width*.4+window.scrollX)+"px"; s.style.top=(r.top+8+Math.random()*(r.height-30)+window.scrollY)+"px";
+    s.style.position="absolute"; s.style.animationDelay=(Math.random()*.25)+"s";
+    document.body.appendChild(s); setTimeout(()=>s.remove(),1400);
+  }
+}
+
+async function reveal(timeout){
+  const Q=QS[S.qi], unplaced=S.money-placed(), before=S.money;
+  S.phase="reveal"; S.lastI=-1; dock.hidden=true; render();
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  // drumroll: lights chase round the trapdoors twice
+  for(let r=0;r<2;r++) for(let i=0;i<Q.a.length;i++){
+    const d=document.getElementById("d"+i); d.classList.remove("scan"); void d.offsetWidth; d.classList.add("scan"); await wait(170);
+  }
+  await wait(500);
+  const wrong=Q.a.map((_,i)=>i).filter(i=>i!==Q.c);
+  for(const i of wrong){
+    const d=document.getElementById("d"+i);
+    d.scrollIntoView({behavior:"smooth",block:"center"});
+    d.classList.add("dropping"); await wait(600);
+    d.classList.remove("dropping"); d.classList.add("open","gone");
+    if(S.bets[i]){ burst(d,S.bets[i]/BUNDLE); const f=document.createElement("div"); f.className="flash"; document.body.appendChild(f); setTimeout(()=>f.remove(),400); }
+    await wait(1100);
+  }
+  document.getElementById("d"+Q.c).classList.add("win");
+  S.money=S.bets[Q.c];
+  S.log.push({q:S.qi+1,kept:S.money,lost:before-S.money});
+  S.answered=S.qi+1; report(S.money===0||S.qi===QS.length-1);
+  const bank=document.querySelector(".bank");
+  bank.querySelector(".eyebrow").textContent="Money left";
+  const amt=bank.querySelector(".amt"); amt.textContent=fmt(S.money); amt.classList.toggle("zero",false);
+  bank.querySelector(".bundles").innerHTML=Array.from({length:Math.round(S.money/BUNDLE)},()=>"<i></i>").join("");
+  const out=S.money===0;
+  document.getElementById("after").innerHTML=`
+    <div class="explain ${out?'lostall':''}">
+      <h3>${L[Q.c]}: ${esc(Q.a[Q.c])}</h3>
+      <p>${timeout&&unplaced?`Time ran out and ${fmt(unplaced)} wasn't placed, so it dropped. `:""}${esc(Q.e)}</p>
+    </div>`;
+  dock.hidden=false; cta.disabled=false; hint.className="hint";
+  hint.textContent=out?"You've lost all your money":`You kept ${fmt(S.money)}${before-S.money?` and lost ${fmt(before-S.money)}`:""}`;
+  const last=S.qi===QS.length-1;
+  cta.textContent=out||last?"See final result":"Next question";
+  cta.onclick=()=>{ if(out||last) end(); else {S.qi++; question(); window.scrollTo(0,0);} };
+  document.getElementById("after").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+function end(){
+  S.phase="end"; window.scrollTo(0,0);
+  const lost=S.money===0;
+  app.innerHTML=`
+  <section class="final">
+    <div class="eyebrow">${esc(S.team)} walks away with</div>
+    <div class="big num ${lost?'lost':''}">${fmt(S.money)}</div>
+    <p style="margin:0;color:var(--muted)">${lost?"Every penny dropped. Read the answers and try again.":S.money===START?"You kept the whole million!":"Show this screen to your teacher."}</p>
+    <div class="log">${S.log.map(l=>`<div><span>Question ${l.q}</span><span class="num" style="color:${l.lost?'var(--wrong)':'var(--right)'}">${l.lost?"−"+fmt(l.lost):"Nothing lost"}</span></div>`).join("")}</div>
+    ${S.room?`<div class="stack"><div class="eyebrow">Room ${esc(S.room)} leaderboard</div><div class="board" id="board"><div class="offline">Loading scores…</div></div></div>`:""}
+    <div class="debrief"><div class="eyebrow" style="margin-bottom:4px">Discuss with your team</div>Switch 2 sells far more consoles than Xbox. Does selling fewer consoles mean Xbox is losing, or could its marketing strategy be different?</div>
+  </section>`;
+  hint.textContent=""; cta.disabled=false; cta.textContent="Play again"; cta.onclick=start;
+  if(S.room){ report(true); loadBoard(); clearInterval(S.poll); S.poll=setInterval(loadBoard,4000); }
+}
+async function loadBoard(){
+  const el=document.getElementById("board"); if(!el) return;
+  try{
+    const r=await fetch("/api/scores?room="+encodeURIComponent(S.room),{cache:"no-store"});
+    if(!r.ok) throw 0;
+    const {teams}=await r.json();
+    teams.sort((a,b)=>b.money-a.money||b.q-a.q);
+    el.innerHTML=teams.length?teams.map((t,i)=>`<div class="brow ${t.id===ID?"me":""}"><span class="rk">${i+1}</span>
+      <span class="nm">${esc(t.team)}<small>${t.done?"Finished":"Question "+Math.min(t.q+1,QS.length)+" of "+QS.length}</small></span>
+      <span class="mn num">${fmt(t.money)}</span></div>`).join(""):'<div class="offline">No teams yet.</div>';
+  }catch(e){ el.innerHTML='<div class="offline">Scoreboard not connected.</div>'; }
+}
+S.team=savedTeam; S.room=(params.get("room")||savedRoom).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
+start();
+</script>
+</body>
+</html>
