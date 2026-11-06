@@ -28,3 +28,5 @@ it uploads the pages but not the scoreboard function. Use one of these instead.
 4. Press **New room** for the next class, or **Clear scores** to reset the current room.
 
 Teams can play without a room code too. Their score just isn't sent anywhere.
+
+
